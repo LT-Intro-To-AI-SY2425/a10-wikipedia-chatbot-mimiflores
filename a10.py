@@ -140,8 +140,36 @@ def polar_radius(matches: List[str]) -> List[str]:
     """
     return [get_polar_radius(matches[0])]
 
+def get_capital_city(country_name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:Capital(?: city)?(?:[^A-Za-z0-9]*))(?P<capital>[A-Z][a-z]+(?: [A-Z][a-z]+)*)"
+    error_text = "Page infobox has no capital city information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("capital")
 
-# dummy argument is ignored and doesn't matter
+def capital_city(matches: List[str]) -> List[str]:
+    return [get_capital_city(" ".join(matches))]
+
+def get_discovery_date(name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    pattern = r"(?:Discovery date\s*:? ?)(?P<discovery>[\w]+ \d{1,2}, \d{4})"
+    error_text = "Page infobox has no discovery date information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("discovery")
+
+def discovery_date(matches: List[str]) -> List[str]:
+    return [get_discovery_date(" ".join(matches))]
+
+def get_height(name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    pattern = r"(?:Height\s*:? ?)(?P<height>\d+\s?cm|\d+'\d+\")"
+    error_text = "Page infobox has no height information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("height")
+
+def height(matches: List[str]) -> List[str]:
+    return [get_height(" ".join(matches))]
+
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
 
@@ -156,9 +184,11 @@ Action = Callable[[List[str]], List[Any]]
 pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
     ("what is the polar radius of %".split(), polar_radius),
+    ("what is the capital of %".split(), capital_city),
+    ("when was % discovered".split(), discovery_date),
+    ("how tall is %".split(), height),
     (["bye"], bye_action),
 ]
-
 
 def search_pa_list(src: List[str]) -> List[str]:
     """Takes source, finds matching pattern and calls corresponding action. If it finds
