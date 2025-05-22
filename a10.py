@@ -170,6 +170,28 @@ def get_height(name: str) -> str:
 def height(matches: List[str]) -> List[str]:
     return [get_height(" ".join(matches))]
 
+def get_area(name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    pattern = r"(?:Area(?:[^A-Za-z0-9]+)?(?:Total)?[^0-9]{0,10})(?P<area>[\d,]+)"
+    error_text = "Page infobox has no area data"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("area")
+
+def area(matches: List[str]) -> List[str]:
+    return [get_area(" ".join(matches))]
+
+
+
+def get_currency(country: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
+    pattern = r"(?:Currency(?:[^A-Za-z0-9]*)\s*)(?P<currency>[A-Z][a-zA-Z ]+)"
+    error_text = "Page infobox has no currency information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("currency")
+
+def currency(matches: List[str]) -> List[str]:
+    return [get_currency(" ".join(matches))]
+
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
 
@@ -189,7 +211,10 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("how tall is %".split(), height),
     (["bye"], bye_action),
 ]
-
+pa_list.extend([
+("what is the area of %".split(), area),
+("what is the currency of %".split(), currency)
+])
 def search_pa_list(src: List[str]) -> List[str]:
     """Takes source, finds matching pattern and calls corresponding action. If it finds
     a match but has no answers it returns ["No answers"]. If it finds no match it
